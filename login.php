@@ -4,12 +4,16 @@ require_once 'includes/config.php';
 $error_message = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    error_log("Login form submitted");
     $email = sanitize_input($_POST['email']);
     $password = $_POST['password']; // Not sanitizing password to preserve special characters
+    
+    error_log("Login attempt for email: " . $email);
     
     // Validate input
     if (empty($email) || empty($password)) {
         $error_message = "Email and password are required";
+        error_log("Login validation failed: empty email or password");
     } else {
         // Check if user exists
         $sql = "SELECT * FROM users WHERE email = ?";
@@ -35,7 +39,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     if ($user['user_type'] === 'admin') {
                         redirect('admin/dashboard.php');
                     } else {
-                        redirect('index.php');
+                        // For debugging
+                        error_log("Login successful for user ID: " . $_SESSION['user_id']);
+                        redirect('dashboard.php');
                     }
                 } else {
                     $error_message = "Invalid password";
@@ -60,24 +66,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     if ($user['user_type'] === 'admin') {
                         redirect('admin/dashboard.php');
                     } else {
-                        redirect('index.php');
+                        // For debugging
+                        error_log("Login successful for user ID: " . $_SESSION['user_id']);
+                        redirect('dashboard.php');
                     }
                 } else {
                     $error_message = "Invalid password";
                 }
             }
         } else {
-            // Try the old table structure for backward compatibility
-            $sql = "SELECT * FROM signup1 WHERE Email = '$email' AND Password = '$password'";
-            $result = mysqli_query($conn, $sql);
-            
-            if ($result && $result->num_rows > 0) {
-                // Set basic session variables
-                $_SESSION['user_email'] = $email;
-                redirect('index.php');
-            } else {
-                $error_message = "User not found. Please check your email or sign up.";
-            }
+            // No need to check old table structure as we're using the users table
+            // User not found in the users table
+            $error_message = "User not found. Please check your email or sign up.";
         }
     }
 }

@@ -2,9 +2,14 @@
 require_once 'includes/header.php';
 
 // Check if user is logged in
-if (!isset($_SESSION['user_id']) && !isset($_SESSION['user_email'])) {
+if (!isset($_SESSION['user_id'])) {
+    error_log("User not logged in, redirecting to login page");
     redirect('login.php');
 }
+
+// Debug information
+error_log("Dashboard accessed by user ID: " . $_SESSION['user_id']);
+error_log("Session data: " . print_r($_SESSION, true));
 
 $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
 $user_email = isset($_SESSION['user_email']) ? $_SESSION['user_email'] : '';
@@ -21,23 +26,9 @@ if ($user_id > 0) {
         $user = $user_result->fetch_assoc();
     }
 } elseif (!empty($user_email)) {
-    // Try to get user from old table
-    $user_sql = "SELECT * FROM signup1 WHERE Email = ?";
-    $user_stmt = $conn->prepare($user_sql);
-    $user_stmt->bind_param("s", $user_email);
-    $user_stmt->execute();
-    $user_result = $user_stmt->get_result();
-    if ($user_result->num_rows > 0) {
-        $old_user = $user_result->fetch_assoc();
-        $user = [
-            'id' => 0,
-            'first_name' => $old_user['FirstName'],
-            'last_name' => $old_user['LastName'],
-            'email' => $old_user['Email'],
-            'contact' => $old_user['Contact'],
-            'user_type' => 'donor' // Default
-        ];
-    }
+    // If we get here and user is not found in the users table,
+    // they need to register properly
+    // No need to check old tables
 }
 
 // Handle donation status updates
@@ -144,8 +135,8 @@ if ($user_id > 0) {
             </div>
         <?php endif; ?>
         
-        <div class="text-center mb-12">
-            <h1 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold text-blue-900 sm:text-4xl">
                 My Dashboard
             </h1>
             <?php if ($user): ?>
@@ -157,21 +148,22 @@ if ($user_id > 0) {
         
         <!-- User Profile Summary -->
         <?php if ($user): ?>
-            <div class="bg-purple-50 rounded-lg shadow-sm p-6 mb-8">
+            <div class="bg-blue-50 rounded-lg shadow-sm p-6 mb-8 border border-blue-100">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between">
                     <div class="flex items-center mb-4 md:mb-0">
-                        <div class="bg-purple-100 rounded-full p-3 mr-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div class="bg-blue-100 rounded-full p-3 mr-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                         </div>
                         <div>
                             <h2 class="text-xl font-bold text-gray-900"><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></h2>
                             <p class="text-gray-600"><?php echo htmlspecialchars($user['email']); ?></p>
+                            <p class="text-gray-500 text-sm"><?php echo htmlspecialchars($user['contact']); ?></p>
                         </div>
                     </div>
                     <div class="flex space-x-4">
-                        <a href="profile.php" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                        <a href="profile.php" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
@@ -186,13 +178,135 @@ if ($user_id > 0) {
                     </div>
                 </div>
             </div>
+            
+            <!-- Activity Statistics -->
+            <div class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Donations Stats -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-blue-100">
+                    <div class="flex items-center">
+                        <div class="bg-blue-100 rounded-full p-3 mr-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">My Donations</h3>
+                            <div class="flex items-center mt-1">
+                                <span class="text-3xl font-bold text-blue-600"><?php echo count($donations); ?></span>
+                                <span class="ml-2 text-sm text-gray-500">total donations</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 grid grid-cols-2 gap-4">
+                        <div class="bg-blue-50 rounded p-3 text-center">
+                            <span class="block text-xl font-bold text-blue-600">
+                                <?php 
+                                    $available = 0;
+                                    foreach ($donations as $donation) {
+                                        if ($donation['status'] == 'available') $available++;
+                                    }
+                                    echo $available;
+                                ?>
+                            </span>
+                            <span class="text-xs text-gray-500">Available</span>
+                        </div>
+                        <div class="bg-yellow-50 rounded p-3 text-center">
+                            <span class="block text-xl font-bold text-yellow-600">
+                                <?php 
+                                    $reserved = 0;
+                                    foreach ($donations as $donation) {
+                                        if ($donation['status'] == 'reserved') $reserved++;
+                                    }
+                                    echo $reserved;
+                                ?>
+                            </span>
+                            <span class="text-xs text-gray-500">Reserved</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reservations Stats -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-blue-100">
+                    <div class="flex items-center">
+                        <div class="bg-green-100 rounded-full p-3 mr-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">My Reservations</h3>
+                            <div class="flex items-center mt-1">
+                                <span class="text-3xl font-bold text-green-600"><?php echo count($reservations); ?></span>
+                                <span class="ml-2 text-sm text-gray-500">total reservations</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 grid grid-cols-2 gap-4">
+                        <div class="bg-green-50 rounded p-3 text-center">
+                            <span class="block text-xl font-bold text-green-600">
+                                <?php 
+                                    $active = 0;
+                                    foreach ($reservations as $reservation) {
+                                        if ($reservation['status'] == 'pending' || $reservation['status'] == 'confirmed') $active++;
+                                    }
+                                    echo $active;
+                                ?>
+                            </span>
+                            <span class="text-xs text-gray-500">Active</span>
+                        </div>
+                        <div class="bg-blue-50 rounded p-3 text-center">
+                            <span class="block text-xl font-bold text-blue-600">
+                                <?php 
+                                    $completed = 0;
+                                    foreach ($reservations as $reservation) {
+                                        if ($reservation['status'] == 'completed') $completed++;
+                                    }
+                                    echo $completed;
+                                ?>
+                            </span>
+                            <span class="text-xs text-gray-500">Completed</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-blue-100">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                    <div class="space-y-3">
+                        <a href="donate.php" class="flex items-center p-3 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors duration-200">
+                            <div class="bg-blue-100 rounded-full p-2 mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700">Create New Donation</span>
+                        </a>
+                        <a href="donations.php" class="flex items-center p-3 bg-green-50 rounded-md hover:bg-green-100 transition-colors duration-200">
+                            <div class="bg-green-100 rounded-full p-2 mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700">Find Available Food</span>
+                        </a>
+                        <a href="profile.php" class="flex items-center p-3 bg-yellow-50 rounded-md hover:bg-yellow-100 transition-colors duration-200">
+                            <div class="bg-yellow-100 rounded-full p-2 mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700">Update Profile</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
         <?php endif; ?>
         
         <!-- Dashboard Tabs -->
         <div class="mb-8">
             <div class="sm:hidden">
                 <label for="tabs" class="sr-only">Select a tab</label>
-                <select id="tabs" name="tabs" onchange="switchTab(this.value)" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md">
+                <select id="tabs" name="tabs" onchange="switchTab(this.value)" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
                     <option value="donations">My Donations</option>
                     <option value="reservations">My Reservations</option>
                 </select>
@@ -200,7 +314,7 @@ if ($user_id > 0) {
             <div class="hidden sm:block">
                 <div class="border-b border-gray-200">
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                        <a href="#" onclick="switchTab('donations'); return false;" class="tab-link border-purple-500 text-purple-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" id="donations-tab">
+                        <a href="#" onclick="switchTab('donations'); return false;" class="tab-link border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" id="donations-tab">
                             My Donations
                         </a>
                         <a href="#" onclick="switchTab('reservations'); return false;" class="tab-link border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" id="reservations-tab">
@@ -490,12 +604,12 @@ if ($user_id > 0) {
         
         // Update tab styles
         document.querySelectorAll('.tab-link').forEach(tab => {
-            tab.classList.remove('border-purple-500', 'text-purple-600');
+            tab.classList.remove('border-blue-500', 'text-blue-600');
             tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
         });
         
         document.getElementById(tabId + '-tab').classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-        document.getElementById(tabId + '-tab').classList.add('border-purple-500', 'text-purple-600');
+        document.getElementById(tabId + '-tab').classList.add('border-blue-500', 'text-blue-600');
     }
 </script>
 

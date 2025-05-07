@@ -208,9 +208,9 @@ require_once 'includes/header.php';
             <div class="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow text-center">
                 <div class="p-6">
                     <div class="w-32 h-32 rounded-full overflow-hidden mx-auto mb-4">
-                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Team Member" class="w-full h-full object-cover">
+                        <img src="https://media.istockphoto.com/id/1255163297/vector/user-profile-icon-vector-avatar-portrait-symbol-flat-shape-person-sign-logo-black-silhouette.jpg?s=612x612&w=0&k=20&c=p6azyhUBIcWx6-aXVRPUTveaVqbTA2bNXpBoGQjEB68=" alt="Team Member" class="w-full h-full object-cover">
                     </div>
-                    <h3 class="text-xl font-bold mb-1 primary-color">Sarah Johnson</h3>
+                    <h3 class="text-xl font-bold mb-1 primary-color">Bhupani Mounika</h3>
                     <p class="text-gray-600 mb-3">Founder & CEO</p>
                     <p class="text-gray-700 mb-4">Passionate about sustainable food systems and community building.</p>
                     <div class="flex justify-center space-x-3">
@@ -224,10 +224,10 @@ require_once 'includes/header.php';
             <div class="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow text-center">
                 <div class="p-6">
                     <div class="w-32 h-32 rounded-full overflow-hidden mx-auto mb-4">
-                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Team Member" class="w-full h-full object-cover">
+                        <img src="https://media.istockphoto.com/id/1255163297/vector/user-profile-icon-vector-avatar-portrait-symbol-flat-shape-person-sign-logo-black-silhouette.jpg?s=612x612&w=0&k=20&c=p6azyhUBIcWx6-aXVRPUTveaVqbTA2bNXpBoGQjEB68=" alt="Team Member" class="w-full h-full object-cover">
                     </div>
-                    <h3 class="text-xl font-bold mb-1 primary-color">Michael Chen</h3>
-                    <p class="text-gray-600 mb-3">CTO</p>
+                    <h3 class="text-xl font-bold mb-1 primary-color">Laxmisai</h3>
+                    <p class="text-gray-600 mb-3">Developer</p>
                     <p class="text-gray-700 mb-4">Tech expert with a background in sustainable development and social impact.</p>
                     <div class="flex justify-center space-x-3">
                         <a href="#" class="text-gray-400 hover:text-blue-500"><i class="fab fa-linkedin"></i></a>
@@ -240,10 +240,10 @@ require_once 'includes/header.php';
             <div class="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow text-center">
                 <div class="p-6">
                     <div class="w-32 h-32 rounded-full overflow-hidden mx-auto mb-4">
-                        <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Team Member" class="w-full h-full object-cover">
+                        <img src="https://media.istockphoto.com/id/1255163297/vector/user-profile-icon-vector-avatar-portrait-symbol-flat-shape-person-sign-logo-black-silhouette.jpg?s=612x612&w=0&k=20&c=p6azyhUBIcWx6-aXVRPUTveaVqbTA2bNXpBoGQjEB68=" alt="Team Member" class="w-full h-full object-cover">
                     </div>
-                    <h3 class="text-xl font-bold mb-1 primary-color">Priya Patel</h3>
-                    <p class="text-gray-600 mb-3">Operations Director</p>
+                    <h3 class="text-xl font-bold mb-1 primary-color">Mohana</h3>
+                    <p class="text-gray-600 mb-3">Developer</p>
                     <p class="text-gray-700 mb-4">Expert in logistics and supply chain management with a focus on food systems.</p>
                     <div class="flex justify-center space-x-3">
                         <a href="#" class="text-gray-400 hover:text-blue-500"><i class="fab fa-linkedin"></i></a>
@@ -256,10 +256,10 @@ require_once 'includes/header.php';
             <div class="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow text-center">
                 <div class="p-6">
                     <div class="w-32 h-32 rounded-full overflow-hidden mx-auto mb-4">
-                        <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="Team Member" class="w-full h-full object-cover">
+                        <img src="https://media.istockphoto.com/id/1255163297/vector/user-profile-icon-vector-avatar-portrait-symbol-flat-shape-person-sign-logo-black-silhouette.jpg?s=612x612&w=0&k=20&c=p6azyhUBIcWx6-aXVRPUTveaVqbTA2bNXpBoGQjEB68=" alt="Team Member" class="w-full h-full object-cover">
                     </div>
-                    <h3 class="text-xl font-bold mb-1 primary-color">James Wilson</h3>
-                    <p class="text-gray-600 mb-3">Community Manager</p>
+                    <h3 class="text-xl font-bold mb-1 primary-color">Toufiq</h3>
+                    <p class="text-gray-600 mb-3">Developer</p>
                     <p class="text-gray-700 mb-4">Dedicated to building relationships with donors, recipients, and community partners.</p>
                     <div class="flex justify-center space-x-3">
                         <a href="#" class="text-gray-400 hover:text-blue-500"><i class="fab fa-linkedin"></i></a>

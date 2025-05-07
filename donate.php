@@ -1,6 +1,10 @@
 <?php
 require_once 'includes/header.php';
 
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Check if user is logged in
 if (!isset($_SESSION['user_id']) && !isset($_SESSION['user_email'])) {
     // Store the current page as the redirect destination after login
@@ -17,65 +21,86 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Debug information
     error_log("Form submitted: " . print_r($_POST, true));
     
-    // Get form data
-    $donor_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 1; // Default to 1 if using old system
-    error_log("Donor ID: " . $donor_id);
-    
-    $food_type = sanitize_input($_POST['food_type']);
-    $food_name = sanitize_input($_POST['food_name']);
-    $food_details = sanitize_input($_POST['food_details']);
-    $quantity = isset($_POST['quantity']) ? sanitize_input($_POST['quantity']) : null;
-    $serves_people = isset($_POST['serves_people']) ? sanitize_input($_POST['serves_people']) : null;
-    $expiry_time = sanitize_input($_POST['expiry_time']);
-    $pickup_address = sanitize_input($_POST['pickup_address']);
-    $contact_number = sanitize_input($_POST['contact_number']);
-    
-    // Handle file upload if present
-    $image_url = '';
-    if (isset($_FILES['food_image']) && $_FILES['food_image']['error'] == 0) {
-        $upload_dir = 'uploads/';
-        
-        // Create directory if it doesn't exist
-        if (!file_exists($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
+    try {
+        // Get form data
+        $donor_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+        if (!$donor_id) {
+            throw new Exception("User ID not found in session.");
         }
+        error_log("Donor ID: " . $donor_id);
         
-        $file_name = time() . '_' . basename($_FILES['food_image']['name']);
-        $target_file = $upload_dir . $file_name;
-        
-        // Check if image file is a actual image
-        $check = getimagesize($_FILES['food_image']['tmp_name']);
-        if ($check !== false) {
-            // Try to upload file
-            if (move_uploaded_file($_FILES['food_image']['tmp_name'], $target_file)) {
-                $image_url = $target_file;
-            } else {
-                $error_message = "Sorry, there was an error uploading your file.";
+        // Validate required fields
+        $required_fields = ['food_type', 'food_name', 'food_details', 'expiry_time', 'pickup_address', 'contact_number'];
+        foreach ($required_fields as $field) {
+            if (empty($_POST[$field])) {
+                throw new Exception("Please fill in all required fields.");
             }
-        } else {
-            $error_message = "File is not an image.";
         }
-    }
-    
-    // Validate input
-    if (empty($food_name) || empty($food_details) || empty($expiry_time) || empty($pickup_address) || empty($contact_number)) {
-        $error_message = "All required fields must be filled out";
-    } else {
-        // Insert into food_donations table
+        
+        $food_type = sanitize_input($_POST['food_type']);
+        $food_name = sanitize_input($_POST['food_name']);
+        $food_details = sanitize_input($_POST['food_details']);
+        $quantity = isset($_POST['quantity']) ? sanitize_input($_POST['quantity']) : null;
+        $serves_people = isset($_POST['serves_people']) ? sanitize_input($_POST['serves_people']) : null;
+        $expiry_time = sanitize_input($_POST['expiry_time']);
+        $pickup_address = sanitize_input($_POST['pickup_address']);
+        $contact_number = sanitize_input($_POST['contact_number']);
+        
+        // Validate food type
+        if (!in_array($food_type, ['raw_food', 'cooked_food'])) {
+            throw new Exception("Invalid food type selected.");
+        }
+        
+        // Handle file upload if present
+        $image_url = '';
+        if (isset($_FILES['food_image']) && $_FILES['food_image']['error'] == 0) {
+            $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+            $filename = $_FILES['food_image']['name'];
+            $filetype = pathinfo($filename, PATHINFO_EXTENSION);
+            
+            if (!in_array(strtolower($filetype), $allowed)) {
+                throw new Exception("Invalid file type. Only JPG, JPEG, PNG & GIF files are allowed.");
+            }
+            
+            $upload_path = 'uploads/';
+            if (!file_exists($upload_path)) {
+                mkdir($upload_path, 0777, true);
+            }
+            
+            $new_filename = uniqid() . '.' . $filetype;
+            $upload_file = $upload_path . $new_filename;
+            
+            if (!move_uploaded_file($_FILES['food_image']['tmp_name'], $upload_file)) {
+                throw new Exception("Failed to upload image.");
+            }
+            
+            $image_url = $upload_file;
+        }
+        
+        // Insert into food_donations table using prepared statement
         $sql = "INSERT INTO food_donations (donor_id, food_type, food_name, food_details, quantity, serves_people, expiry_time, pickup_address, contact_number, image_url) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            throw new Exception("Error preparing statement: " . $conn->error);
+        }
+        
         $stmt->bind_param("issssissss", $donor_id, $food_type, $food_name, $food_details, $quantity, $serves_people, $expiry_time, $pickup_address, $contact_number, $image_url);
         
-        if ($stmt->execute()) {
-            $success_message = "Your food donation has been listed successfully!";
-            error_log("Donation saved successfully with ID: " . $stmt->insert_id);
-            // Clear form data
-            $_POST = array();
-        } else {
-            $error_message = "Error: " . $stmt->error;
-            error_log("Error saving donation: " . $stmt->error);
+        if (!$stmt->execute()) {
+            throw new Exception("Error executing statement: " . $stmt->error);
         }
+        
+        $success_message = "Your food donation has been listed successfully!";
+        error_log("Donation saved successfully with ID: " . $stmt->insert_id);
+        
+        // Clear form data
+        $_POST = array();
+        $stmt->close();
+        
+    } catch (Exception $e) {
+        $error_message = "Error: " . $e->getMessage();
+        error_log("Error in donation submission: " . $e->getMessage());
     }
 }
 ?>

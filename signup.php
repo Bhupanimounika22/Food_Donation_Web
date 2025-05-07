@@ -48,10 +48,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $update_stmt->bind_param("ss", $hashed_password, $email);
                 $update_stmt->execute();
                 
-                // Also insert into the old signup1 table for backward compatibility
-                $old_sql = "INSERT INTO signup1 (FirstName, LastName, Email, Password, Cpassword, Contact)
-                           VALUES ('$firstName', '$lastName', '$email', '$password', '$cPassword', '$contact')";
-                mysqli_query($conn, $old_sql);
+                // The user has been successfully registered in the users table
+                // No need to insert into any other tables
                 
                 $success_message = "Registration successful! You can now login.";
                 

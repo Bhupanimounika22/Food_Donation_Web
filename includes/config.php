@@ -106,7 +106,18 @@ if (mysqli_num_rows($result) == 0) {
 
 // Start session if not already started
 if (session_status() == PHP_SESSION_NONE) {
+    // Set session cookie parameters for better security and compatibility
+    session_set_cookie_params([
+        'lifetime' => 86400, // 24 hours
+        'path' => '/',
+        'domain' => '',
+        'secure' => false, // Set to true if using HTTPS
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+    
     session_start();
+    error_log("Session started with ID: " . session_id());
 }
 
 // Function to sanitize input data
